@@ -20,9 +20,10 @@ const addRoleQs = [
         "name": "roleSalary"
     },
     {
-        "type": "input",
+        "type": "list",
         "prompt": "What department does the role fall under?",
-        "name": "roleDept"
+        "name": "roleDept",
+        "choices": ["TO FIX"]
     }
 ]
 
@@ -43,13 +44,30 @@ const addEmployeeQs = [
         "name": "employeeRole"
     },
     {
-        "type": "input",
+        "type": "list",
         "prompt": "Who is the employee's manager?",
-        "name": "employeeManager"
+        "name": "employeeManager",
+        "choices": ["TO FIX"]
     },
     {
-        "type": "input",
+        "type": "list",
         "prompt": "What department is the employee in?",
-        "name": "employeeDept"
+        "name": "employeeDept",
+        "choices": ["TO FIX"]
+    }
+]
+
+const updateEmployeeQs = [
+    {
+        "type": "list",
+        "prompt": "What is the employee's name?",
+        "name": "employeeName",
+        "choices": ["TO FIX"]
+    },
+    {
+        "type": "list",
+        "prompt": "What is the employee's updated role?",
+        "name": "employeeRole",
+        "choices": ["TO FIX"]
     }
 ]
