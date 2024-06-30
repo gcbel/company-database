@@ -1,5 +1,14 @@
 const inquirer = require('inquirer')
 
+const initialQs = [
+    {
+        "type": "list",
+        "prompt": "Select an action:",
+        "name": "action",
+        "choices": ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"]
+    }
+]
+
 const addDeptQs = [
     {
         "type": "input",
@@ -71,3 +80,7 @@ const updateEmployeeQs = [
         "choices": ["TO FIX"]
     }
 ]
+
+inquirer
+    .prompt(initialQs)
+    .then()
