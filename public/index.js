@@ -1,6 +1,5 @@
 /* DEPENDENCIES */
 const inquirer = require('inquirer')
-import {view} from "./utils/generateMarkdown.js";
 
 /* VARIABLES */
 const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"];
@@ -93,26 +92,53 @@ const updateEmployeeQs = [
 ]
 
 /* FUNCTIONS */
+/* Calls function for requested action */
 function handleRequest(action) {
     const index = actions.findIndex(i => i == action)  // Get index of requested action
-    functions[index]  // Call function for requested action
+    functions[index]
 }
 
+/* Fetch departments */
 function viewDepts() {
+    fetch('/api/departments', {
+        method: 'GET',
+        headers: {'Content-Type': 'application/json'}
+    })
 
+    .then((response) => response.json())
+    .then((data) => console.log(data))
+    .catch((err) => {
+        console.error('Error:', err);
+    });
 }
 
+/* Fetch roles */
 function viewRoles () {
+    fetch('/api/roles', {
+        method: 'GET',
+        headers: {'Content-Type': 'application/json'}
+    })
 
+    .then((response) => response.json())
+    .then((data) => console.log(data))
+    .catch((err) => {
+        console.error('Error:', err);
+    });
 }
 
+/* Fetch employees */
 function viewEmployees () {
+    fetch('/api/employees', {
+        method: 'GET',
+        headers: {'Content-Type': 'application/json'}
+    })
 
+    .then((response) => response.json())
+    .then((data) => console.log(data))
+    .catch((err) => {
+        console.error('Error:', err);
+    });
 }
-
-function viewRoles () {
-
-} 
 
 function addDept () {
 
