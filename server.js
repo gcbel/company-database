@@ -15,16 +15,36 @@ const pool = new Pool(
       user: 'postgres',
       password: 'pw',
       host: 'localhost',
-      database: 'movies_db'
+      database: 'business_db'
     },
-    console.log(`Connected to the books_db database.`)
+    console.log(`Connected to the business_db database.`)
 )
 
 pool.connect();
 
 /* ROUTES */
-app.get('/api/')
+/* Get route to see all departments */
+app.get('/api/departments', (res, req) => {
+    pool.query('SELECT * FROM departments', function (err, {rows}) {
+        err ? console.err(`Error: ${err}`) : console.log(rows);
+    })
+});
 
+/* Get route to see all roles */
+app.get('/api/roles', (res, req) => {
+    pool.query('SELECT * FROM roles', function (err, {rows}) {
+        err ? console.err(`Error: ${err}`) : console.log(rows);
+    })
+});
+
+/* Get route to see all employees */
+app.get('/api/employees', (res, req) => {
+    pool.query('SELECT * FROM employees', function (err, {rows}) {
+        err ? console.err(`Error: ${err}`) : console.log(rows);
+    })
+});
+
+/* PORT */
 app.listen(PORT, () => {
     console.log(`Server running on port http://localhost:${PORT}`);
 });
