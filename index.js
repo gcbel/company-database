@@ -33,7 +33,7 @@ function viewDepts() {
     pool.query('SELECT * FROM departments', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`)
         if (rows.length === 0) {
-            console.log("No departments yet, add departments to get started!");
+            console.log("No departments.");
             handleAnotherRequest();
         } else {
             console.log("Departments:");
@@ -48,7 +48,7 @@ function viewRoles () {
     pool.query('SELECT * FROM roles', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`)
         if (rows.length === 0) { 
-            console.log("No roles yet, add roles to get started!");
+            console.log("No roles.");
             handleAnotherRequest();
         } else {
             console.log("Roles:");
@@ -63,7 +63,7 @@ function viewEmployees () {
     pool.query('SELECT * FROM employees', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`) 
         if (rows.length === 0) {
-            console.log("No employees yet, add employees to get started!");
+            console.log("No employees.");
             handleAnotherRequest();
         } else {
             console.log("Employees:");
@@ -132,9 +132,9 @@ async function addEmployee () {
         // Get questions for user
         const queries = await addEmployeeQ()
 
-        // Alert user if no departments or no roles have been added yet
+        // Alert user if no roles have been added yet
         if (queries.length === 0) {
-            console.log("Please add a department first!");
+            console.log("Please add a role first!");
             handleAnotherRequest();
             return;
         }
@@ -143,10 +143,14 @@ async function addEmployee () {
         inquirer
             .prompt(queries)
             .then((response) => {
-                const [deptId] = response.roleDept.split(': ');     // Parse department id
-                const [managerId] = response.roleDept.split(': ');  // Parse manager id
-                const responses = [response.employeeFirst, response.employeeLast, response.employeeRole, managerId, deptId]
-                const query = 'INSERT INTO employees(first, last, manager_id, role_id) VALUES ($1, $2, $3, $4, $5)';
+                const [roleId] = response.employeeRole.split(': ');        // Parse role id
+                const [managerId] = response.employeeManager.split(': ');  // Parse manager id
+
+                // If no manager selected, set manager to null
+                let responses = [response.employeeFirst, response.employeeLast, roleId, managerId]
+                if (managerId === 0) responses = [response.employeeFirst, response.employeeLast, roleId, null]
+
+                const query = 'INSERT INTO employees(first, last, role_id, manager_id) VALUES ($1, $2, $3, $4)';
             
                 pool.query(query, responses, (err, result) => {
                     if (err) console.error(`${err}`)

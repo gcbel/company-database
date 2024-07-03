@@ -21,8 +21,8 @@ CREATE TABLE employees (
     id SERIAL PRIMARY KEY,
     first VARCHAR(40) NOT NULL,
     last VARCHAR(40) NOT NULL,
-    manager_id INTEGER,
     role_id INTEGER NOT NULL,
+    manager_id INTEGER,
     FOREIGN KEY (role_id)
     REFERENCES roles(id)
 );

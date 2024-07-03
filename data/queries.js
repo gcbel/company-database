@@ -1,7 +1,7 @@
 /* DEPENDENCIES */
 const inquirer = require('inquirer')
-const pool = require('../config/connection.js')
 const {getDepartments, getEmployees, getRoles} = require('../helpers/utils.js')
+const pool = require('../config/connection.js')
 pool.connect();
 
 /* PROMPTS */
@@ -72,12 +72,12 @@ const addRoleQ = async () => {
 /* Prompts for adding a new employee */
 const addEmployeeQ = async () => {
     try {
-        const roles = await getRoles();              // Wait for roles to be fetched
-        const managers = await getEmployees();       // Wait for employees to be fetched
-        const departments = await getDepartments();  // Wait for departments to be fetched
-        
+        const roles = await getRoles();       // Wait for roles to be fetched
+        let managers = await getEmployees();  // Wait for employees to be fetched
+        managers.unshift('0: None')           // Add an option for no manager
+
         // Return an empty query if no departments have been added yet
-        if (departments.length === 0) return [];
+        if (roles.length === 0) return [];
 
         return [
             {
@@ -101,12 +101,6 @@ const addEmployeeQ = async () => {
                 "message": "Who is the employee's manager?",
                 "name": "employeeManager",
                 "choices": managers
-            },
-            {
-                "type": "list",
-                "message": "What department is the employee in?",
-                "name": "employeeDept",
-                "choices": departments
             }
         ]
 

@@ -1,3 +1,7 @@
+/* DEPENDENCIES */
+const pool = require('../config/connection.js')
+pool.connect();
+
 /* FUNCTIONS */
 /* Return all departments in an array in the format [id: name, id2: name2] */
 async function getDepartments() {
@@ -30,7 +34,7 @@ async function getRoles() {
     try {
         const {rows} = await pool.query('SELECT * FROM roles') 
         result = [];
-        rows.forEach(row => result.push(`${row.id}: ${row.first} ${row.last}`));
+        rows.forEach(row => result.push(`${row.id}: ${row.title}`));
         return result;
     } catch (err) {
         console.error(err);
