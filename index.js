@@ -5,7 +5,7 @@ pool.connect();
 
 /* VARIABLES */
 const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ} = require('./data/queries')
-const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"];
+const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee"];
 const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee];
 
 /* FUNCTIONS */
@@ -22,7 +22,7 @@ function handleAnotherRequest() {
         .then((response) => {
             if (response.answer === "Yes") init()
             else {
-                console.log("Thank you!");
+                console.log("Have a good day!");
                 process.exit();
             }
         });
@@ -30,6 +30,7 @@ function handleAnotherRequest() {
 
 /* Fetch departments */
 function viewDepts() {
+    // Get table with all employee information
     pool.query('SELECT * FROM departments', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`)
         if (rows.length === 0) {
@@ -45,30 +46,59 @@ function viewDepts() {
 
 /* Fetch roles */
 function viewRoles () {
+    // Check first if any roles
     pool.query('SELECT * FROM roles', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`)
-        if (rows.length === 0) { 
+
+        // If no roles, alert user
+        if (rows.length === 0) {
             console.log("No roles.");
             handleAnotherRequest();
+
+        // Get table with all role information
         } else {
-            console.log("Roles:");
-            console.table(rows);
-            handleAnotherRequest();
+            query = `SELECT roles.id, title, salary, department_name AS department 
+            FROM roles JOIN departments ON department_id = departments.id`
+
+            pool.query(query, function (err, {rows}) {
+                if (err) console.err(`Error: ${err}`)
+                else {
+                    console.log("Roles:");
+                    console.table(rows);
+                    handleAnotherRequest();
+                }
+            })
         }
     })
 }
 
 /* Fetch employees */
 function viewEmployees () {
+    // Check first if any employees
     pool.query('SELECT * FROM employees', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`) 
+
+        // If no employees, alert user
         if (rows.length === 0) {
             console.log("No employees.");
             handleAnotherRequest();
+
+        // Get table with all employee information
         } else {
-            console.log("Employees:");
-            console.table(rows);
-            handleAnotherRequest();
+            query = `SELECT employees.id, employees.first AS first_name, employees.last AS last_name, 
+            roles.title AS role, roles.salary, department_name AS department, CONCAT(manager.first, ' ', manager.last) AS manager
+            FROM employees JOIN roles ON employees.role_id = roles.id 
+            JOIN departments ON roles.department_id = departments.id
+            LEFT JOIN employees manager ON employees.manager_id = manager.id;`
+
+            pool.query(query, function (err, {rows}) {
+                if (err) console.err(`Error: ${err}`) 
+                else {
+                    console.log("Employees:");
+                    console.table(rows);
+                    handleAnotherRequest();
+                }
+            })
         }
     })
 }
@@ -78,7 +108,7 @@ function addDept () {
     inquirer
         .prompt(addDeptQ)
         .then((response) => {
-            const query = 'INSERT INTO departments(name) VALUES ($1)';
+            const query = 'INSERT INTO departments(department_name) VALUES ($1)';
 
             pool.query(query, [response.deptName], (err, result) => {
                 if (err) console.error(`${err}`)
@@ -108,8 +138,8 @@ async function addRole () {
             .prompt(queries)
             .then((response) => {
                 const [deptId] = response.roleDept.split(': ');  // Parse department id
-                const responses = [response.roleName, response.roleSalary, deptId]
-                const query = 'INSERT INTO roles(title, salary, dept_id) VALUES ($1, $2, $3)';
+                const responses = [response.roleName, parseFloat(response.roleSalary), deptId]
+                const query = 'INSERT INTO roles(title, salary, department_id) VALUES ($1, $2, $3)';
 
                 pool.query(query, responses, (err, result) => {
                     if (err) console.error(`${err}`) 
@@ -132,6 +162,8 @@ async function addEmployee () {
         // Get questions for user
         const queries = await addEmployeeQ()
 
+        console.log(queries)
+
         // Alert user if no roles have been added yet
         if (queries.length === 0) {
             console.log("Please add a role first!");
@@ -148,7 +180,7 @@ async function addEmployee () {
 
                 // If no manager selected, set manager to null
                 let responses = [response.employeeFirst, response.employeeLast, roleId, managerId]
-                if (managerId === 0) responses = [response.employeeFirst, response.employeeLast, roleId, null]
+                if (managerId === "0") responses[3] = null
 
                 const query = 'INSERT INTO employees(first, last, role_id, manager_id) VALUES ($1, $2, $3, $4)';
             
@@ -168,10 +200,44 @@ async function addEmployee () {
 
 }
 
-function updateEmployee () {
-    inquirer
-        .prompt(updateEmployeeQ)
-        // .then((responses) => ...(responses));
+async function updateEmployee () {
+    try {
+        // Get questions for user
+        const queries = await updateEmployeeQ()
+
+        // Alert user if no roles have been added yet
+        if (queries.length === 0) {
+            console.log("Please adds role and employees first!");
+            handleAnotherRequest();
+            return;
+        }
+
+        // Prompt user with questions
+        inquirer
+            .prompt(queries)
+            .then((response) => {
+                const [employeeId] = response.employeeName.split(': ');    // Parse employee id
+                const [roleId] = response.employeeRole.split(': ');        // Parse role id
+                const [managerId] = response.employeeManager.split(': ');  // Parse manager id
+
+                // If no manager selected, set manager to null
+                let responses = [roleId, managerId, employeeId];
+                if (managerId === "0") responses[1] = null;
+                const query = 'UPDATE employees SET role_id = $1, manager_id = $2 WHERE id = $3';
+            
+                pool.query(query, responses, (err, result) => {
+                    if (err) console.error(`${err}`)
+                    else {
+                        console.log("Employee updated!");
+                        handleAnotherRequest();
+                    }
+                })
+            });
+
+    // Error checking
+    } catch (err) {
+        console.error(`${err}`);
+    }
 }
 
 /* INITIALIZERS */

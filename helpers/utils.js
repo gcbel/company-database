@@ -8,20 +8,7 @@ async function getDepartments() {
     try {
         const {rows} = await pool.query('SELECT * FROM departments') 
         result = [];
-        rows.forEach(row => result.push(`${row.id}: ${row.name}`));
-        return result;
-    } catch (err) {
-        console.error(err);
-        return [];  // In case of error, return empty array
-    }
-}
-
-/* Return all employees in an array in the format [id: first last, id2: first2 last2] */
-async function getEmployees() {
-    try {
-        const {rows} = await pool.query('SELECT * FROM employees') 
-        result = [];
-        rows.forEach(row => result.push(`${row.id}: ${row.first} ${row.last}`));
+        rows.forEach(row => result.push(`${row.id}: ${row.department_name}`));
         return result;
     } catch (err) {
         console.error(err);
@@ -42,4 +29,17 @@ async function getRoles() {
     }
 }
 
-module.exports = {getDepartments, getEmployees, getRoles}
+/* Return all employees in an array in the format [id: first last, id2: first2 last2] */
+async function getEmployees() {
+    try {
+        const {rows} = await pool.query('SELECT * FROM employees') 
+        result = [];
+        rows.forEach(row => result.push(`${row.id}: ${row.first} ${row.last}`));
+        return result;
+    } catch (err) {
+        console.error(err);
+        return [];  // In case of error, return empty array
+    }
+}
+
+module.exports = {getDepartments, getRoles, getEmployees}

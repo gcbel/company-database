@@ -1,12 +1,12 @@
 /* DEPENDENCIES */
 const inquirer = require('inquirer')
-const {getDepartments, getEmployees, getRoles} = require('../helpers/utils.js')
+const {getDepartments, getRoles, getEmployees} = require('../helpers/utils.js')
 const pool = require('../config/connection.js')
 pool.connect();
 
 /* PROMPTS */
 /* Prompts for user action */
-const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"];
+const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee"];
 const actionQ = [
     {
         "type": "list",
@@ -76,7 +76,7 @@ const addEmployeeQ = async () => {
         let managers = await getEmployees();  // Wait for employees to be fetched
         managers.unshift('0: None')           // Add an option for no manager
 
-        // Return an empty query if no departments have been added yet
+        // Return an empty query if no roles have been added yet
         if (roles.length === 0) return [];
 
         return [
@@ -117,6 +117,10 @@ const updateEmployeeQ = async () => {
         const employees = await getEmployees();  // Wait for employees to be fetched
         const roles = await getRoles();          // Wait for roles to be fetched
 
+        // Return an empty query if no roles or employees have been added yet
+        if (roles.length === 0) return [];
+        if (employees.length === 0) return [];
+
         return [
             {
                 "type": "list",
@@ -126,9 +130,15 @@ const updateEmployeeQ = async () => {
             },
             {
                 "type": "list",
-                "message": "What is the employee's updated role?",
+                "message": "What is the employee's new role?",
                 "name": "employeeRole",
                 "choices": roles
+            },
+            {
+                "type": "list",
+                "message": "Who is the employee's new manager?",
+                "name": "employeeManager",
+                "choices": employees
             }
         ]
 
