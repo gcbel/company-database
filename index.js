@@ -4,7 +4,7 @@ const pool = require('./config/connection.js')
 pool.connect();
 
 /* VARIABLES */
-const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ} = require('./data/queries')
+const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ} = require('./data/queries')
 const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"];
 const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee];
 
@@ -90,41 +90,78 @@ function addDept () {
         });
 }
 
+/* Add a new role */
 async function addRole () {
-    const queries = await addRoleQ()
-    console.log(queries)
-    inquirer
-        .prompt(queries)
-        .then((response) => {
-            const [deptId] = response.roleDept.split(': ');
-            const responses = [response.roleName, response.roleSalary, deptId]
-            const query = 'INSERT INTO roles(title, salary, dept_id) VALUES ($1, $2, $3)';
+    try {
+        // Get questions for user
+        const queries = await addRoleQ()
 
-            pool.query(query, responses, (err, result) => {
-                if (err) console.error(`${err}`) 
-                else {
-                    console.log("Role added!");
-                    handleAnotherRequest();
-                }
-            })
-        });
+        // Alert user if no departments have been added yet
+        if (queries.length === 0) {
+            console.log("Please add a department first!");
+            handleAnotherRequest();
+            return;
+        }
+
+        // Prompt user with questions
+        inquirer
+            .prompt(queries)
+            .then((response) => {
+                const [deptId] = response.roleDept.split(': ');  // Parse department id
+                const responses = [response.roleName, response.roleSalary, deptId]
+                const query = 'INSERT INTO roles(title, salary, dept_id) VALUES ($1, $2, $3)';
+
+                pool.query(query, responses, (err, result) => {
+                    if (err) console.error(`${err}`) 
+                    else {
+                        console.log("Role added!");
+                        handleAnotherRequest();
+                    }
+                })
+            });
+
+    // Error checking
+    } catch (err) {
+        console.error(`${err}`);
+    }
 }
 
-function addEmployee () {
-    inquirer
-        .prompt(addEmployeeQ)
-        .then((response) => {
-            const responses = [response.employeeFirst, response.employeeLast, response.employeeRole, response.employeeManager, response.employeeDept]
-            const query = 'INSERT INTO employees(first, last, manager_id, role_id) VALUES ($1, $2, $3, $4, $5)';
-        
-            pool.query(query, responses, (err, result) => {
-                if (err) console.error(`${err}`)
-                else {
-                    console.log("Employee added!");
-                    handleAnotherRequest();
-                }
-            })
-        });
+/* Add a new role */
+async function addEmployee () {
+    try {
+        // Get questions for user
+        const queries = await addEmployeeQ()
+
+        // Alert user if no departments or no roles have been added yet
+        if (queries.length === 0) {
+            console.log("Please add a department first!");
+            handleAnotherRequest();
+            return;
+        }
+
+        // Prompt user with questions
+        inquirer
+            .prompt(queries)
+            .then((response) => {
+                const [deptId] = response.roleDept.split(': ');     // Parse department id
+                const [managerId] = response.roleDept.split(': ');  // Parse manager id
+                const responses = [response.employeeFirst, response.employeeLast, response.employeeRole, managerId, deptId]
+                const query = 'INSERT INTO employees(first, last, manager_id, role_id) VALUES ($1, $2, $3, $4, $5)';
+            
+                pool.query(query, responses, (err, result) => {
+                    if (err) console.error(`${err}`)
+                    else {
+                        console.log("Employee added!");
+                        handleAnotherRequest();
+                    }
+                })
+            });
+
+    // Error checking
+    } catch (err) {
+        console.error(`${err}`);
+    }
+
 }
 
 function updateEmployee () {
