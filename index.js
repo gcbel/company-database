@@ -42,21 +42,45 @@ function handleAnotherRequest() {
 /* Fetch departments */
 function viewDepts() {
     pool.query('SELECT * FROM departments', function (err, {rows}) {
-        err ? console.err(`Error: ${err}`) : res.json(rows);
+        if (err) console.err(`Error: ${err}`)
+        if (rows.length === 0) {
+            console.log("No departments yet, add departments to get started!");
+            handleAnotherRequest();
+        } else {
+            console.log("Departments:");
+            console.table(rows);
+            handleAnotherRequest();
+        }
     })
 }
 
 /* Fetch roles */
 function viewRoles () {
     pool.query('SELECT * FROM roles', function (err, {rows}) {
-        err ? console.err(`Error: ${err}`) : res.json(rows);
+        if (err) console.err(`Error: ${err}`)
+        if (rows.length === 0) { 
+            console.log("No roles yet, add roles to get started!");
+            handleAnotherRequest();
+        } else {
+            console.log("Roles:");
+            console.table(rows);
+            handleAnotherRequest();
+        }
     })
 }
 
 /* Fetch employees */
 function viewEmployees () {
     pool.query('SELECT * FROM employees', function (err, {rows}) {
-        err ? console.err(`Error: ${err}`) : res.json(rows);
+        if (err) console.err(`Error: ${err}`) 
+        if (rows.length === 0) {
+            console.log("No employees yet, add employees to get started!");
+            handleAnotherRequest();
+        } else {
+            console.log("Employees:");
+            console.table(rows);
+            handleAnotherRequest();
+        }
     })
 }
 
@@ -68,7 +92,11 @@ function addDept () {
             const query = 'INSERT INTO departments(name) VALUES ($1)';
 
             pool.query(query, [response.deptName], (err, result) => {
-                 err ? console.error(`${err}`) : console.log("Department added!");
+                if (err) console.error(`${err}`)
+                else {
+                    console.log("Department added!");
+                    handleAnotherRequest();
+                }
             })
         });
 }
@@ -81,7 +109,11 @@ function addRole () {
             const query = 'INSERT INTO roles(title, salary, dept_id) VALUES ($1, $2, $3)';
 
             pool.query(query, responses, (err, result) => {
-                err ? console.error(`${err}`) : console.log("Role added!");
+                if (err) console.error(`${err}`) 
+                else {
+                    console.log("Role added!");
+                    handleAnotherRequest();
+                }
             })
         });
 }
@@ -94,7 +126,11 @@ function addEmployee () {
             const query = 'INSERT INTO employees(first, last, manager_id, role_id) VALUES ($1, $2, $3, $4, $5)';
         
             pool.query(query, responses, (err, result) => {
-                 err ? console.error(`${err}`) : console.log("Employee added!");
+                if (err) console.error(`${err}`)
+                else {
+                    console.log("Employee added!");
+                    handleAnotherRequest();
+                }
             })
         });
 }
