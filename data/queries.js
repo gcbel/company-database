@@ -1,3 +1,9 @@
+/* DEPENDENCIES */
+const inquirer = require('inquirer')
+const pool = require('../config/connection.js')
+pool.connect();
+
+/* VARIABLES */
 /* Prompts for user action */
 const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"];
 const actionQ = [
@@ -29,24 +35,32 @@ const addDeptQ = [
 ]
 
 /* Prompts for adding a new role */
-const addRoleQ = [
-    {
-        "type": "input",
-        "message": "What is the role's title?",
-        "name": "roleName"
-    },
-    {
-        "type": "input",
-        "message": "What is the salary of the role?",
-        "name": "roleSalary"
-    },
-    {
-        "type": "list",
-        "message": "What department does the role fall under?",
-        "name": "roleDept",
-        "choices": ["TO FIX"]
+const addRoleQ = async () => {
+    try {
+        const departments = await getDepartments();  // Wait for departments to be fetched
+        const queries = [
+            {
+                "type": "input",
+                "message": "What is the role's title?",
+                "name": "roleName"
+            },
+            {
+                "type": "input",
+                "message": "What is the salary of the role?",
+                "name": "roleSalary"
+            },
+            {
+                "type": "list",
+                "message": "What department does the role fall under?",
+                "name": "roleDept",
+                "choices": departments
+            }
+        ]
+        return queries;
+    } catch (err) {
+        console.error(`${err}`);
     }
-]
+}
 
 /* Prompts for adding a new employee */
 const addEmployeeQ = [
@@ -94,5 +108,19 @@ const updateEmployeeQ = [
         "choices": ["TO FIX"]
     }
 ]
+
+/* FUNCTIONS */
+/* Return all departments in an array in the format [id: name, id2: name2] */
+async function getDepartments() {
+    try {
+        const {rows} = await pool.query('SELECT * FROM departments') 
+        result = [];
+        rows.forEach(row => result.push(`${row.id}: ${row.name}`));
+        return result;
+    } catch (err) {
+        console.error(err);
+        return [];  // In case of error, return empty array
+    }
+}
 
 module.exports = {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ};

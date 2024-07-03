@@ -1,17 +1,6 @@
 /* DEPENDENCIES */
 const inquirer = require('inquirer')
-const {Pool} = require('pg');
-
-const pool = new Pool(
-    {
-      user: 'postgres',
-      password: 'pw',
-      host: 'localhost',
-      database: 'business_db'
-    },
-    console.log(`Connected to the business_db database.`)
-)
-
+const pool = require('./config/connection.js')
 pool.connect();
 
 /* VARIABLES */
@@ -101,11 +90,14 @@ function addDept () {
         });
 }
 
-function addRole () {
+async function addRole () {
+    const queries = await addRoleQ()
+    console.log(queries)
     inquirer
-        .prompt(addRoleQ)
+        .prompt(queries)
         .then((response) => {
-            const responses = [response.roleName, response.roleSalary, response.roleDept]
+            const [deptId] = response.roleDept.split(': ');
+            const responses = [response.roleName, response.roleSalary, deptId]
             const query = 'INSERT INTO roles(title, salary, dept_id) VALUES ($1, $2, $3)';
 
             pool.query(query, responses, (err, result) => {
