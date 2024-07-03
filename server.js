@@ -1,6 +1,7 @@
 /* DEPENDENCIES */
 const express = require('express');
-const {pool} = require('pg');
+const {Pool} = require('pg');
+const init = require('./public/index.js');
 
 /* VARIABLES */
 const PORT = process.env.PORT || 3001;
@@ -24,27 +25,28 @@ pool.connect();
 
 /* ROUTES */
 /* Get route to see all departments */
-app.get('/api/departments', (res, req) => {
+app.get('/api/departments', (req, res) => {
     pool.query('SELECT * FROM departments', function (err, {rows}) {
-        err ? console.err(`Error: ${err}`) : console.log(rows);
+        err ? console.err(`Error: ${err}`) : res.json(rows);
     })
 });
 
 /* Get route to see all roles */
-app.get('/api/roles', (res, req) => {
+app.get('/api/roles', (req, res) => {
     pool.query('SELECT * FROM roles', function (err, {rows}) {
-        err ? console.err(`Error: ${err}`) : console.log(rows);
+        err ? console.err(`Error: ${err}`) : res.json(rows);
     })
 });
 
 /* Get route to see all employees */
-app.get('/api/employees', (res, req) => {
+app.get('/api/employees', (req, res) => {
     pool.query('SELECT * FROM employees', function (err, {rows}) {
-        err ? console.err(`Error: ${err}`) : console.log(rows);
+        err ? console.err(`Error: ${err}`) : res.json(rows);
     })
 });
 
 /* PORT */
 app.listen(PORT, () => {
     console.log(`Server running on port http://localhost:${PORT}`);
+    init();
 });

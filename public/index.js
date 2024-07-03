@@ -6,12 +6,22 @@ const actions = ["View all departments", "View all roles", "View all employees",
 const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee];
 
 /* Prompts for user action */
-const actionQs = [
+const actionQ = [
     {
         "type": "list",
-        "prompt": "Select an action:",
+        "message": "Select an action:",
         "name": "action",
         "choices": actions
+    }
+]
+
+/* Prompts for user for another action */
+const additionalActionQ = [
+    {
+        "type": "list",
+        "message": "Would you like to select another action?",
+        "name": "answer",
+        "choices": ["Yes", "No"]
     }
 ]
 
@@ -19,7 +29,7 @@ const actionQs = [
 const addDeptQs = [
     {
         "type": "input",
-        "prompt": "What is the department's name?",
+        "message": "What is the department's name?",
         "name": "deptName"
     }
 ]
@@ -28,17 +38,17 @@ const addDeptQs = [
 const addRoleQs = [
     {
         "type": "input",
-        "prompt": "What is the role's title?",
+        "message": "What is the role's title?",
         "name": "roleName"
     },
     {
         "type": "input",
-        "prompt": "What is the salary of the role?",
+        "message": "What is the salary of the role?",
         "name": "roleSalary"
     },
     {
         "type": "list",
-        "prompt": "What department does the role fall under?",
+        "message": "What department does the role fall under?",
         "name": "roleDept",
         "choices": ["TO FIX"]
     }
@@ -48,28 +58,28 @@ const addRoleQs = [
 const addEmployeeQs = [
     {
         "type": "input",
-        "prompt": "What is the employee's first name?",
+        "message": "What is the employee's first name?",
         "name": "employeeFirst"
     },
     {
         "type": "input",
-        "prompt": "What is the employee's last name?",
+        "message": "What is the employee's last name?",
         "name": "employeeLast"
     },
     {
         "type": "input",
-        "prompt": "What is the employee's role?",
+        "message": "What is the employee's role?",
         "name": "employeeRole"
     },
     {
         "type": "list",
-        "prompt": "Who is the employee's manager?",
+        "message": "Who is the employee's manager?",
         "name": "employeeManager",
         "choices": ["TO FIX"]
     },
     {
         "type": "list",
-        "prompt": "What department is the employee in?",
+        "message": "What department is the employee in?",
         "name": "employeeDept",
         "choices": ["TO FIX"]
     }
@@ -79,13 +89,13 @@ const addEmployeeQs = [
 const updateEmployeeQs = [
     {
         "type": "list",
-        "prompt": "What is the employee's name?",
+        "message": "What is the employee's name?",
         "name": "employeeName",
         "choices": ["TO FIX"]
     },
     {
         "type": "list",
-        "prompt": "What is the employee's updated role?",
+        "message": "What is the employee's updated role?",
         "name": "employeeRole",
         "choices": ["TO FIX"]
     }
@@ -94,19 +104,36 @@ const updateEmployeeQs = [
 /* FUNCTIONS */
 /* Calls function for requested action */
 function handleRequest(action) {
-    const index = actions.findIndex(i => i == action)  // Get index of requested action
-    functions[index]
+    const index = actions.findIndex(i => i == action.action);  // Get index of requested action
+    functions[index]();
+}
+
+/* Calls function for requested action */
+function handleAnotherRequest() {
+    inquirer
+        .prompt(additionalActionQ)
+        .then((response) => {
+            if (response.answer === "Yes") init()
+            else {
+                console.log("Thank you!");
+                process.exit();
+            }
+        });
 }
 
 /* Fetch departments */
 function viewDepts() {
-    fetch('/api/departments', {
+    fetch('http://localhost:3001/api/departments', {
         method: 'GET',
         headers: {'Content-Type': 'application/json'}
     })
 
     .then((response) => response.json())
-    .then((data) => console.log(data))
+    .then((data) => {
+        console.log("Departments:");
+        console.log(data);
+        handleAnotherRequest();
+    })
     .catch((err) => {
         console.error('Error:', err);
     });
@@ -114,13 +141,17 @@ function viewDepts() {
 
 /* Fetch roles */
 function viewRoles () {
-    fetch('/api/roles', {
+    fetch('http://localhost:3001/api/roles', {
         method: 'GET',
         headers: {'Content-Type': 'application/json'}
     })
 
     .then((response) => response.json())
-    .then((data) => console.log(data))
+    .then((data) => {
+        console.log("Roles:");
+        console.log(data);
+        handleAnotherRequest();
+    })
     .catch((err) => {
         console.error('Error:', err);
     });
@@ -128,13 +159,17 @@ function viewRoles () {
 
 /* Fetch employees */
 function viewEmployees () {
-    fetch('/api/employees', {
+    fetch('http://localhost:3001/api/employees', {
         method: 'GET',
         headers: {'Content-Type': 'application/json'}
     })
 
     .then((response) => response.json())
-    .then((data) => console.log(data))
+    .then((data) => {
+        console.log("Employees:");
+        console.log(data);
+        handleAnotherRequest();
+    })
     .catch((err) => {
         console.error('Error:', err);
     });
@@ -159,12 +194,12 @@ function updateEmployee () {
 }
 
 /* INITIALIZERS */
-/* Initialize call to prompt user to select an action */
+/* Initialize call to message user to select an action */
 function init() {
     inquirer
-        .prompt(actionQs)
+        .prompt(actionQ)
         .then((action) => handleRequest(action));
 }
 
 /* Function call to initialize app */
-init();
+module.exports = init;
