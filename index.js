@@ -180,7 +180,7 @@ async function addEmployee () {
 
                 // If no manager selected, set manager to null
                 let responses = [response.employeeFirst, response.employeeLast, roleId, managerId]
-                if (managerId === "0") responses[3] = null
+                if (managerId === "0") responses = [response.employeeFirst, response.employeeLast, roleId, null]
 
                 const query = 'INSERT INTO employees(first, last, role_id, manager_id) VALUES ($1, $2, $3, $4)';
             
@@ -221,7 +221,7 @@ async function updateEmployee () {
                 const [managerId] = response.employeeManager.split(': ');  // Parse manager id
 
                 // If no manager selected, set manager to null
-                let responses = [roleId, managerId, employeeId];
+                let responses = [roleId, managerId, employeeId]
                 if (managerId === "0") responses[1] = null;
                 const query = 'UPDATE employees SET role_id = $1, manager_id = $2 WHERE id = $3';
             
