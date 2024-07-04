@@ -4,9 +4,9 @@ const pool = require('./config/connection.js')
 pool.connect();
 
 /* VARIABLES */
-const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ, deleteDeptQ, deleteRoleQ, deleteEmployeeQ} = require('./data/queries')
-const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee", "Delete a department", "Delete a role", "Delete an employee"];
-const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee, deleteDept, deleteRole, deleteEmployee];
+const {actionQ, additionalActionQ, employeeByDeptQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ, deleteDeptQ, deleteRoleQ, deleteEmployeeQ} = require('./data/queries')
+const actions = ["View all departments", "View all roles", "View all employees", "View employees by department", "Add a department", "Add a role", "Add an employee", "Update an employee", "Delete a department", "Delete a role", "Delete an employee"];
+const functions = [viewDepts, viewRoles, viewEmployees, viewEmployeesByDepartment, addDept, addRole, addEmployee, updateEmployee, deleteDept, deleteRole, deleteEmployee];
 
 /* FUNCTIONS */
 /* Calls function for requested action */
@@ -99,6 +99,55 @@ function viewEmployees () {
     })
 }
 
+/* Fetch employees by department */
+async function viewEmployeesByDepartment () {
+    try {
+        const queries = await employeeByDeptQ()  // Get questions for user
+        if (queries.length === 0) {
+            console.log("Please add a department first!");  // Alert user if no depts have been added yet
+            handleAnotherRequest();
+            return;
+        }
+
+        // Prompt user with questions
+        inquirer
+            .prompt(queries)
+            .then((response) => {
+                const [deptId, deptName] = response.dept.split(': ');  // Parse dept id
+                let query = `SELECT * FROM employees 
+                JOIN roles ON employees.role_id = roles.id WHERE roles.department_id = $1;`
+
+                // Check first if any employees in department
+                pool.query(query, [deptId], function (err, {rows}) {
+                    if (err) console.err(`Error: ${err}`) 
+                    if (rows.length === 0) {
+                        console.log("No employees.");  // If no employees, alert user
+                        handleAnotherRequest();
+
+                    // Get table with all employee information
+                    } else {
+                        query = `SELECT employees.id, employees.first AS first_name, employees.last AS last_name, 
+                        roles.title AS role, roles.salary, department_name AS department, CONCAT(manager.first, ' ', manager.last) AS manager
+                        FROM employees JOIN roles ON employees.role_id = roles.id 
+                        JOIN departments ON roles.department_id = departments.id
+                        LEFT JOIN employees manager ON employees.manager_id = manager.id
+                        WHERE roles.department_id = $1;`
+
+                        pool.query(query, [deptId], function (err, {rows}) {
+                            if (err) console.err(`Error: ${err}`) 
+                            else {
+                                console.log(`Employees in ${deptName}:`);
+                                console.table(rows);
+                                handleAnotherRequest();
+                            }
+                        })
+                    }
+                })
+            })
+
+    } catch (err) { console.error(err)}  // Error checking
+}
+
 /* Add new department */
 function addDept () {
     inquirer
@@ -177,7 +226,6 @@ async function addEmployee () {
             });
 
     } catch (err) { console.error(err)}  // Error checking
-
 }
 
 async function updateEmployee () {
