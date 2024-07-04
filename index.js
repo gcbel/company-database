@@ -30,7 +30,7 @@ function handleAnotherRequest() {
 
 /* Fetch departments */
 function viewDepts() {
-    // Get table with all employee information
+    // Get table with all department information
     pool.query('SELECT * FROM departments', function (err, {rows}) {
         if (err) console.err(`Error: ${err}`)
         if (rows.length === 0) {
@@ -46,55 +46,41 @@ function viewDepts() {
 
 /* Fetch roles */
 function viewRoles () {
-    // Check first if any roles
-    pool.query('SELECT * FROM roles', function (err, {rows}) {
+    // Get table with all role information
+    query = `SELECT roles.id, title, salary, department_name AS department 
+    FROM roles JOIN departments ON department_id = departments.id`
+
+    pool.query(query, function (err, {rows}) {
         if (err) console.err(`Error: ${err}`)
         if (rows.length === 0) {
             console.log("No roles.");  // If no roles, alert user
             handleAnotherRequest();
-
-        // Get table with all role information
         } else {
-            query = `SELECT roles.id, title, salary, department_name AS department 
-            FROM roles JOIN departments ON department_id = departments.id`
-
-            pool.query(query, function (err, {rows}) {
-                if (err) console.err(`Error: ${err}`)
-                else {
-                    console.log("Roles:");
-                    console.table(rows);
-                    handleAnotherRequest();
-                }
-            })
+            console.log("Roles:");
+            console.table(rows);
+            handleAnotherRequest();
         }
     })
 }
 
 /* Fetch employees */
 function viewEmployees () {
-    // Check first if any employees
-    pool.query('SELECT * FROM employees', function (err, {rows}) {
+    // Get table with all employee information
+    query = `SELECT employees.id, employees.first AS first_name, employees.last AS last_name, 
+    roles.title AS role, roles.salary, department_name AS department, CONCAT(manager.first, ' ', manager.last) AS manager
+    FROM employees JOIN roles ON employees.role_id = roles.id 
+    JOIN departments ON roles.department_id = departments.id
+    LEFT JOIN employees manager ON employees.manager_id = manager.id;`
+
+    pool.query(query, function (err, {rows}) {
         if (err) console.err(`Error: ${err}`) 
         if (rows.length === 0) {
             console.log("No employees.");  // If no employees, alert user
             handleAnotherRequest();
-
-        // Get table with all employee information
         } else {
-            query = `SELECT employees.id, employees.first AS first_name, employees.last AS last_name, 
-            roles.title AS role, roles.salary, department_name AS department, CONCAT(manager.first, ' ', manager.last) AS manager
-            FROM employees JOIN roles ON employees.role_id = roles.id 
-            JOIN departments ON roles.department_id = departments.id
-            LEFT JOIN employees manager ON employees.manager_id = manager.id;`
-
-            pool.query(query, function (err, {rows}) {
-                if (err) console.err(`Error: ${err}`) 
-                else {
-                    console.log("Employees:");
-                    console.table(rows);
-                    handleAnotherRequest();
-                }
-            })
+            console.log("Employees:");
+            console.table(rows);
+            handleAnotherRequest();
         }
     })
 }
@@ -114,33 +100,22 @@ async function viewEmployeesByDepartment () {
             .prompt(queries)
             .then((response) => {
                 const [deptId, deptName] = response.dept.split(': ');  // Parse dept id
-                let query = `SELECT * FROM employees 
-                JOIN roles ON employees.role_id = roles.id WHERE roles.department_id = $1;`
+                query = `SELECT employees.id, employees.first AS first_name, employees.last AS last_name, 
+                roles.title AS role, roles.salary, department_name AS department, CONCAT(manager.first, ' ', manager.last) AS manager
+                FROM employees JOIN roles ON employees.role_id = roles.id 
+                JOIN departments ON roles.department_id = departments.id
+                LEFT JOIN employees manager ON employees.manager_id = manager.id
+                WHERE roles.department_id = $1;`
 
-                // Check first if any employees in department
                 pool.query(query, [deptId], function (err, {rows}) {
                     if (err) console.err(`Error: ${err}`) 
                     if (rows.length === 0) {
-                        console.log("No employees.");  // If no employees, alert user
+                        console.log(`No employees in ${deptName}.`);  // If no employees, alert user
                         handleAnotherRequest();
-
-                    // Get table with all employee information
                     } else {
-                        query = `SELECT employees.id, employees.first AS first_name, employees.last AS last_name, 
-                        roles.title AS role, roles.salary, department_name AS department, CONCAT(manager.first, ' ', manager.last) AS manager
-                        FROM employees JOIN roles ON employees.role_id = roles.id 
-                        JOIN departments ON roles.department_id = departments.id
-                        LEFT JOIN employees manager ON employees.manager_id = manager.id
-                        WHERE roles.department_id = $1;`
-
-                        pool.query(query, [deptId], function (err, {rows}) {
-                            if (err) console.err(`Error: ${err}`) 
-                            else {
-                                console.log(`Employees in ${deptName}:`);
-                                console.table(rows);
-                                handleAnotherRequest();
-                            }
-                        })
+                        console.log(`Employees in ${deptName}:`);
+                        console.table(rows);
+                        handleAnotherRequest();
                     }
                 })
             })
