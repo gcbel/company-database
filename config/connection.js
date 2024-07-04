@@ -5,9 +5,9 @@ const pool = new Pool(
       user: 'postgres',
       password: 'pw',
       host: 'localhost',
-      database: 'business_db'
+      database: 'company_db'
     },
-    console.log(`Connected to the business_db database.`)
+    console.log(`Connected to the company database.`)
 )
 
 module.exports = pool;
