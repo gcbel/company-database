@@ -4,7 +4,7 @@
 
 This project is a command-line application that can be used manage a company's departments, roles, and employees. This project is created using Node.js, Inquirer, and PostgreSQL.
 
-[Here]() is a video demonstrating the functionality of the application.
+[Here](https://drive.google.com/file/d/1Oupb9GPhwvy40UNx1TTln1Oj3fNIuLVc/view?usp=sharing) is a video demonstrating the functionality of the application.
 
 ## Installation
 
