@@ -4,9 +4,9 @@ const pool = require('./config/connection.js')
 pool.connect();
 
 /* VARIABLES */
-const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ} = require('./data/queries')
-const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee"];
-const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee];
+const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ, deleteEmployeeQ} = require('./data/queries')
+const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee", "Delete an employee"];
+const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee, deleteEmployee];
 
 /* FUNCTIONS */
 /* Calls function for requested action */
@@ -130,7 +130,6 @@ async function addRole () {
         if (queries.length === 0) {
             console.log("Please add a department first!");
             handleAnotherRequest();
-            return;
         }
 
         // Prompt user with questions
@@ -162,13 +161,10 @@ async function addEmployee () {
         // Get questions for user
         const queries = await addEmployeeQ()
 
-        console.log(queries)
-
         // Alert user if no roles have been added yet
         if (queries.length === 0) {
             console.log("Please add a role first!");
             handleAnotherRequest();
-            return;
         }
 
         // Prompt user with questions
@@ -209,7 +205,6 @@ async function updateEmployee () {
         if (queries.length === 0) {
             console.log("Please adds role and employees first!");
             handleAnotherRequest();
-            return;
         }
 
         // Prompt user with questions
@@ -229,6 +224,38 @@ async function updateEmployee () {
                     if (err) console.error(`${err}`)
                     else {
                         console.log("Employee updated!");
+                        handleAnotherRequest();
+                    }
+                })
+            });
+
+    // Error checking
+    } catch (err) {
+        console.error(`${err}`);
+    }
+}
+
+async function deleteEmployee() {
+    try {
+        // Get questions for user
+        const queries = await deleteEmployeeQ()
+
+        // Alert user if no roles have been added yet
+        if (queries.length === 0) {
+            console.log("Please adds employees first!");
+            handleAnotherRequest();
+        }
+
+        // Prompt user with questions
+        inquirer
+            .prompt(queries)
+            .then((response) => {
+                const [employeeId] = response.employee.split(': ');    // Parse employee id
+                const query = 'DELETE FROM employees WHERE id = $1';
+                pool.query(query, [employeeId], (err, result) => {
+                    if (err) console.error(`${err}`)
+                    else {
+                        console.log("Employee deleted.");
                         handleAnotherRequest();
                     }
                 })

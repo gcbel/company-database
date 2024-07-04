@@ -6,7 +6,7 @@ pool.connect();
 
 /* PROMPTS */
 /* Prompts for user action */
-const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee"];
+const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee", "Delete an employee"];
 const actionQ = [
     {
         "type": "list",
@@ -149,4 +149,28 @@ const updateEmployeeQ = async () => {
     }
 }
 
-module.exports = {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ};
+/* Prompts for removing an employee */
+const deleteEmployeeQ = async () => {
+    try {
+        const employees = await getEmployees();  // Wait for employees to be fetched
+
+        // Return an empty query if no roles or employees have been added yet
+        if (employees.length === 0) return [];
+
+        return [
+            {
+                "type": "list",
+                "message": "What employee would you like to remove?",
+                "name": "employee",
+                "choices": employees
+            }
+        ]
+
+    // Error checking
+    } catch (err) {
+        console.error(`${err}`);
+        return []
+    }
+}
+
+module.exports = {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ, deleteEmployeeQ};
