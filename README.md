@@ -14,6 +14,8 @@ To download the package dependencies ([inquirer](https://www.npmjs.com/package/i
 
 ## Usage
 
+First, change the credentials in the config/connection.js to match your Postgres credentials.
+
 To use the database, connect to Postgres using `psql -U postgres`, and once connected to Postgres, run `\i db/schema.sql`. In a separate terminal, the project can be run with `node index` or `node index.js`. The terminal will then prompt the user for desired actions.
 
 This application allows a user to add and delete departments, roles, and employees, as well as view all departments, roles, and employees that have been added. The application also supports updating an employee's role or manager. 
