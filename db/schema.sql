@@ -1,6 +1,5 @@
-DROP DATABASE IF EXISTS business_db;
-DROP DATABASE IF EXISTS company;
-CREATE DATABASE company;
+DROP DATABASE IF EXISTS company_db;
+CREATE DATABASE company_db;
 
 \c company;
 
@@ -16,6 +15,7 @@ CREATE TABLE roles (
     department_id INTEGER NOT NULL,
     FOREIGN KEY (department_id)
     REFERENCES departments(id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE employees (
@@ -26,4 +26,5 @@ CREATE TABLE employees (
     manager_id INTEGER,
     FOREIGN KEY (role_id)
     REFERENCES roles(id)
+    ON DELETE CASCADE
 );

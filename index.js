@@ -4,9 +4,9 @@ const pool = require('./config/connection.js')
 pool.connect();
 
 /* VARIABLES */
-const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ, deleteEmployeeQ} = require('./data/queries')
-const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee", "Delete an employee"];
-const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee, deleteEmployee];
+const {actionQ, additionalActionQ, addDeptQ, addRoleQ, addEmployeeQ, updateEmployeeQ, deleteEmployeeQ, deleteRoleQ} = require('./data/queries')
+const actions = ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee", "Delete an employee", "Delete a role"];
+const functions = [viewDepts, viewRoles, viewEmployees, addDept, addRole, addEmployee, updateEmployee, deleteEmployee, deleteRole];
 
 /* FUNCTIONS */
 /* Calls function for requested action */
@@ -179,7 +179,6 @@ async function addEmployee () {
                 if (managerId === "0") responses = [response.employeeFirst, response.employeeLast, roleId, null]
 
                 const query = 'INSERT INTO employees(first, last, role_id, manager_id) VALUES ($1, $2, $3, $4)';
-            
                 pool.query(query, responses, (err, result) => {
                     if (err) console.error(`${err}`)
                     else {
@@ -218,8 +217,8 @@ async function updateEmployee () {
                 // If no manager selected, set manager to null
                 let responses = [roleId, managerId, employeeId]
                 if (managerId === "0") responses[1] = null;
+
                 const query = 'UPDATE employees SET role_id = $1, manager_id = $2 WHERE id = $3';
-            
                 pool.query(query, responses, (err, result) => {
                     if (err) console.error(`${err}`)
                     else {
@@ -250,12 +249,44 @@ async function deleteEmployee() {
         inquirer
             .prompt(queries)
             .then((response) => {
-                const [employeeId] = response.employee.split(': ');    // Parse employee id
+                const [employeeId] = response.employee.split(': ');  // Parse employee id
                 const query = 'DELETE FROM employees WHERE id = $1';
                 pool.query(query, [employeeId], (err, result) => {
                     if (err) console.error(`${err}`)
                     else {
                         console.log("Employee deleted.");
+                        handleAnotherRequest();
+                    }
+                })
+            });
+
+    // Error checking
+    } catch (err) {
+        console.error(`${err}`);
+    }
+}
+
+async function deleteRole() {
+    try {
+        // Get questions for user
+        const queries = await deleteRoleQ()
+
+        // Alert user if no roles have been added yet
+        if (queries.length === 0) {
+            console.log("Please adds roles first!");
+            handleAnotherRequest();
+        }
+
+        // Prompt user with questions
+        inquirer
+            .prompt(queries)
+            .then((response) => {
+                const [roleId] = response.role.split(': ');  // Parse role id
+                const query = 'DELETE FROM roles WHERE id = $1';
+                pool.query(query, [roleId], (err, result) => {
+                    if (err) console.error(`${err}`)
+                    else {
+                        console.log("Role deleted.");
                         handleAnotherRequest();
                     }
                 })

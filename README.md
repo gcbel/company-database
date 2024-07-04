@@ -20,7 +20,7 @@ This application allows a user to add and delete departments, roles, and employe
 
 ## Credits
 
-N/A
+Reference for cascading deletes: https://www.dbvis.com/thetable/postgres-on-delete-cascade-a-guide/
 
 ## License
 
